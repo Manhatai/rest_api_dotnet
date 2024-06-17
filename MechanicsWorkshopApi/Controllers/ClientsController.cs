@@ -18,7 +18,7 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Clients>>> GetAllClients()
+        public async Task<ActionResult<List<Entities.Clients>>> GetAllClients()
         {
             var clients = await _context.Clients.ToListAsync();
             {
@@ -27,7 +27,7 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Clients>> GetClient(int id)
+        public async Task<ActionResult<Entities.Clients>> GetClient(int id)
         {
             var client = await _context.Clients.FindAsync(id);
             {
@@ -41,7 +41,7 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<List<Clients>>> AddClient(Clients client)
+        public async Task<ActionResult<List<Entities.Clients>>> AddClient(Entities.Clients client)
         {
             _context.Clients.Add(client);
             await _context.SaveChangesAsync();
@@ -49,7 +49,7 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<List<Clients>>> UpdateClient(Clients updatedClient)
+        public async Task<ActionResult<List<Entities.Clients>>> UpdateClient(Entities.Clients updatedClient)
         {
             var dbClient = await _context.Clients.FindAsync(updatedClient.ID);
             {
@@ -70,7 +70,7 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpDelete]
-        public async Task<ActionResult<List<Clients>>> DeleteClient(int id)
+        public async Task<ActionResult<List<Entities.Clients>>> DeleteClient(int id)
         {
             var dbClient = await _context.Clients.FindAsync(id);
             {
