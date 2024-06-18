@@ -9,5 +9,6 @@ namespace MechanicsWorkshopApi.Data
 
         public DbSet<Clients> Clients { get; set; }
         public DbSet<Cars> Cars { get; set; }
+        public DbSet<Bookings> Bookings { get; set; }
     }
 }
