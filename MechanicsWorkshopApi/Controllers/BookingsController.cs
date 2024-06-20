@@ -51,7 +51,7 @@ namespace MechanicsWorkshopApi.Controllers
         {
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
-            return Ok(booking);
+            return Created($"/workshop/clients/{booking.ID}", booking);
         }
 
         [HttpPut]

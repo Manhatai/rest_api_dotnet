@@ -44,7 +44,7 @@ namespace MechanicsWorkshopApi.Controllers
         {
             _context.Cars.Add(car);
             await _context.SaveChangesAsync();
-            return Ok(car);
+            return Created($"/workshop/clients/{car.ID}", car);
         }
 
         [HttpPut]

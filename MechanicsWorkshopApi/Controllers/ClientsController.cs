@@ -1,40 +1,41 @@
-﻿using MechanicsWorkshopApi.Data;
-using MechanicsWorkshopApi.Entities;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using MechanicsWorkshopApi.Data; // Contains the DataContext class.
+using MechanicsWorkshopApi.Entities; // Contains the DB tables.
+using Microsoft.AspNetCore.Mvc; // Contains base classes for ASP.NET Core MVC controllers (??? - todo).
+using Microsoft.EntityFrameworkCore; // Contains the EFC classes for DB operations.
 
 namespace MechanicsWorkshopApi.Controllers
 {
-    [Route("workshop/[controller]")]
-    [ApiController]
+    [Route("workshop/[controller]")] // Sets the base route for the controller. 'Clients' in this case.
+    [ApiController] // Marks the class as an API controller.
     public class ClientsController : ControllerBase
     {
 
-        private readonly DataContext _context;
+        private readonly DataContext _context; // A private variable that holds the 'DataContext' instance.
 
-        public ClientsController(DataContext context)
-        {
+        public ClientsController(DataContext context) // Accepts the DataContext instance injected by dependancy 
+        {                                             // injection system. Used to interact with the DB.
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<Entities.Clients>>> GetAllClients()
-        {
-            var clients = await _context.Clients.ToListAsync();
-            {
-                return Ok(clients);
+        [HttpGet] // Indicates the type of request, GET in this case.
+        // Async performs potentially long-running operations without blocking the calling thread. Allows for await.
+        public async Task<ActionResult<List<Entities.Clients>>> GetAllClients() // Retrives all clients from the DB
+        {                                                                       // in the form of a list.
+            var clients = await _context.Clients.ToListAsync(); // Used to get all cients from the Clients table 
+            {                                                   // by using EFC.
+                return Ok(clients); // 200
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}")] // Get request with an ID parameter
         public async Task<ActionResult<Entities.Clients>> GetClient(int id)
         {
-            var client = await _context.Clients.FindAsync(id);
+            var client = await _context.Clients.FindAsync(id); // Finds client by id
             {
                 if (client is null)
                 {
                     return NotFound("Client not found!");
-                }
+                } 
                 return Ok(client);
             }
 
@@ -45,7 +46,7 @@ namespace MechanicsWorkshopApi.Controllers
         {
             _context.Clients.Add(client);
             await _context.SaveChangesAsync();
-            return Ok(client);
+            return Created($"/workshop/clients/{client.ID}", client); // 201
         }
 
         [HttpPut]
@@ -55,7 +56,7 @@ namespace MechanicsWorkshopApi.Controllers
             {
                 if (dbClient is null)
                 {
-                    return NotFound("Client not found!");
+                    return NotFound("Client not found!"); // 404
                 }
 
                 dbClient.FirstName = updatedClient.FirstName;
@@ -82,7 +83,7 @@ namespace MechanicsWorkshopApi.Controllers
                 _context.Clients.Remove(dbClient);
                 await _context.SaveChangesAsync();
 
-                return NoContent();
+                return NoContent(); // 203
             }
         }
     }
