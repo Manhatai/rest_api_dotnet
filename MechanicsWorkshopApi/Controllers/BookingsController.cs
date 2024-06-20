@@ -49,15 +49,23 @@ namespace MechanicsWorkshopApi.Controllers
         [HttpPost]
         public async Task<ActionResult<List<Entities.Bookings>>> AddBooking(Entities.Bookings booking)
         {
+            booking.Client = await _context.Clients.FindAsync(booking.ClientID);
+            booking.Car = await _context.Cars.FindAsync(booking.CarID);
+
+            if (booking.Client == null || booking.Car == null)
+            {
+                return BadRequest("Client or car doesnt exist!");
+            }
+
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
             return Created($"/workshop/clients/{booking.ID}", booking);
         }
 
-        [HttpPut]
-        public async Task<ActionResult<List<Entities.Bookings>>> UpdateBooking(Entities.Bookings updatedBooking)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<List<Entities.Bookings>>> UpdateBooking(int id, Entities.Bookings updatedBooking)
         {
-            var dbBooking = await _context.Bookings.FindAsync(updatedBooking.ID);
+            var dbBooking = await _context.Bookings.FindAsync(id);
             {
                 if (dbBooking is null)
                 {
@@ -66,6 +74,8 @@ namespace MechanicsWorkshopApi.Controllers
 
                 dbBooking.Date = updatedBooking.Date;
                 dbBooking.Hour = updatedBooking.Hour;
+                dbBooking.ClientID = updatedBooking.ClientID;
+                dbBooking.CarID = updatedBooking.CarID;
 
                 await _context.SaveChangesAsync();
 
@@ -73,7 +83,7 @@ namespace MechanicsWorkshopApi.Controllers
             }
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<ActionResult<List<Entities.Bookings>>> DeleteBooking(int id)
         {
             var dbBooking = await _context.Bookings.FindAsync(id);

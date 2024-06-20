@@ -34,4 +34,4 @@ app.UseAuthorization(); // Adds authorization middleware
 
 app.MapControllers(); // ?? todo
 
-app.Run(); // Runs 
+app.Run(); // Runs the app

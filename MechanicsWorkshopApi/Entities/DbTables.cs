@@ -14,7 +14,7 @@ namespace MechanicsWorkshopApi.Entities
         [Required, MaxLength(20)]                             // 'set' is used when assigning a value to the property                  
         public string LastName { get; set; } = string.Empty;
 
-        [Required, MaxLength(20)]
+        [Required, MaxLength(100)]
         [EmailAddress] // Ensures the proper email address format
         public string Email { get; set; } = string.Empty;
 
@@ -53,10 +53,10 @@ namespace MechanicsWorkshopApi.Entities
 
         [ForeignKey("Client")] // Specifies the relationship
         public int ClientID { get; set; } // Integer representing the foreign key to Class entity
-        public Clients Client { get; set; } // Navigation property to Clients entity
+        public Clients? Client { get; set; } // Navigation property to Clients entity
 
         [ForeignKey("Car")]
         public int CarID { get; set; }
-        public Cars Car { get; set; }
+        public Cars? Car { get; set; }
     }
 }

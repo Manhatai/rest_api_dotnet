@@ -47,10 +47,10 @@ namespace MechanicsWorkshopApi.Controllers
             return Created($"/workshop/clients/{car.ID}", car);
         }
 
-        [HttpPut]
-        public async Task<ActionResult<List<Entities.Cars>>> UpdateCar(Entities.Cars updatedCar)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<List<Entities.Cars>>> UpdateCar(int id, Entities.Cars updatedCar)
         {
-            var dbCar = await _context.Cars.FindAsync(updatedCar.ID);
+            var dbCar = await _context.Cars.FindAsync(id);
             {
                 if (dbCar is null)
                 {
@@ -68,7 +68,7 @@ namespace MechanicsWorkshopApi.Controllers
             }
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<ActionResult<List<Entities.Cars>>> DeleteCar(int id)
         {
             var dbCar = await _context.Cars.FindAsync(id);

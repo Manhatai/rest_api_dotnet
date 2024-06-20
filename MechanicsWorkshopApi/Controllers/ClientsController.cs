@@ -49,10 +49,10 @@ namespace MechanicsWorkshopApi.Controllers
             return Created($"/workshop/clients/{client.ID}", client); // 201
         }
 
-        [HttpPut]
-        public async Task<ActionResult<List<Entities.Clients>>> UpdateClient(Entities.Clients updatedClient)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<List<Entities.Clients>>> UpdateClient(int id, Entities.Clients updatedClient)
         {
-            var dbClient = await _context.Clients.FindAsync(updatedClient.ID);
+            var dbClient = await _context.Clients.FindAsync(id);
             {
                 if (dbClient is null)
                 {
@@ -70,7 +70,7 @@ namespace MechanicsWorkshopApi.Controllers
             }
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<ActionResult<List<Entities.Clients>>> DeleteClient(int id)
         {
             var dbClient = await _context.Clients.FindAsync(id);
@@ -83,7 +83,7 @@ namespace MechanicsWorkshopApi.Controllers
                 _context.Clients.Remove(dbClient);
                 await _context.SaveChangesAsync();
 
-                return NoContent(); // 203
+                return NoContent(); // 204
             }
         }
     }
