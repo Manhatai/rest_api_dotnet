@@ -1,5 +1,7 @@
 using MechanicsWorkshopApi.Data; // Imports data context from Data
-using Microsoft.EntityFrameworkCore; // For DB operations
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens; // For DB operations
 
 var builder = WebApplication.CreateBuilder(args); // Used to configure and build the app, like below
 
@@ -13,11 +15,24 @@ var port = builder.Configuration["REST_API_DB_PORT"];
 var database = builder.Configuration["REST_API_DB_NAME"];
 var username = builder.Configuration["REST_API_DB_LOGIN"];
 var password = builder.Configuration["REST_API_DB_PASSWORD"];
+var secret_key = builder.Configuration["REST_API_JWT_SERCRET_KEY"];
 var connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password}";
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseNpgsql(connectionString); // Registers the connectionString variable as the DB connection which uses
 });                                      // previously retrieved config values. Dependency injection container - todo.
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secret_key)),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
 
 var app = builder.Build(); // 'app = Flask(__name__)' essentially.
 
@@ -30,6 +45,7 @@ if (app.Environment.IsDevelopment()) // Enables the API docummentation testing f
 
 app.UseHttpsRedirection(); // Middleware for redirecting from HTTP to HTTPS
 
+app.UseAuthentication(); // Adds authentication middleware
 app.UseAuthorization(); // Adds authorization middleware 
 
 app.MapControllers(); // ?? todo
@@ -39,10 +55,6 @@ app.Run(); // Runs the app
 
 /*
 Todo:
-- Error when trying to delete a booking with a client, cause the booking history (?)
-- Other error handlers for controllers
-- Authentication
-- Encryption
 - Logging
 - Clean architecture
  */

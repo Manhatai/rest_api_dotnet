@@ -11,5 +11,8 @@ namespace MechanicsWorkshopApi.Data // Namespaces = a way to organize and group 
         public DbSet<Clients> Clients { get; set; } // Collections representing X in each table
         public DbSet<Cars> Cars { get; set; }
         public DbSet<Bookings> Bookings { get; set; }
+
+        public DbSet<User> User { get; set; }
+
     }
 }

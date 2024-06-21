@@ -1,5 +1,6 @@
 ﻿using MechanicsWorkshopApi.Data; // Contains the DataContext class.
 using MechanicsWorkshopApi.Entities; // Contains the DB tables.
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc; // Contains base classes for ASP.NET Core MVC controllers (??? - todo).
 using Microsoft.EntityFrameworkCore; // Contains the EFC classes for DB operations.
 
@@ -18,8 +19,8 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpGet] // Indicates the type of request, GET in this case.
-      
-        public async Task<ActionResult> GetAllClients()
+        [Authorize]
+        public async Task<ActionResult<Clients>> GetAllClients()
         {
             var clients = await _context.Clients.ToListAsync(); // Used to get all cients from the Clients table by using EFC.
             {
@@ -28,7 +29,8 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpGet("{id}")] // Get request with an ID parameter
-        public async Task<ActionResult> GetClient(int id)
+        [Authorize]
+        public async Task<ActionResult<Clients>> GetClient(int id)
         {
             var client = await _context.Clients.FindAsync(id); // Finds client by id
             {
@@ -42,7 +44,8 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> AddClient(Clients client)
+        [Authorize]
+        public async Task<ActionResult<Clients>> AddClient(Clients client)
         {
             if (client == null || client.FirstName == null || client.LastName == null || client.Email == null || client.Phone == null)
             {
@@ -55,7 +58,8 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateClient(int id, Clients updatedClient)
+        [Authorize]
+        public async Task<ActionResult<Clients>> UpdateClient(int id, Clients updatedClient)
         {
             var dbClient = await _context.Clients.FindAsync(id);
             {
@@ -76,13 +80,14 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<ActionResult> DeleteClient(int id)
         {
             // See if there is a booking that contains a client with this id
             var dbBooking = await _context.Bookings.FirstOrDefaultAsync(b => b.ClientID == id); // LINQ lambda expression
             if (dbBooking != null)
             {
-                return BadRequest("Cannot delete client with a booking assigned! Please delete the booking first.");
+                return Conflict("Cannot delete client with a booking assigned! Please delete the booking first.");
             }
 
             var dbClient = await _context.Clients.FindAsync(id);     

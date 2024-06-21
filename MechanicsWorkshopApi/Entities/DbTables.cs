@@ -59,4 +59,26 @@ namespace MechanicsWorkshopApi.Entities
         public int CarID { get; set; }
         public Cars? Car { get; set; }
     }
+
+    public class User
+    {
+        [Key]
+        public int ID { get; set; }
+
+        [Required, MaxLength(30)]
+        public string Login { get; set; } = string.Empty;
+
+        [Required, MaxLength(100)]
+        public string PasswordHash { get; set; } = string.Empty;
+    }
+
+    public class UserRequest
+    {
+
+        [Required, MaxLength(30)]
+        public string Username { get; set; } = string.Empty;
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
+    }
 }

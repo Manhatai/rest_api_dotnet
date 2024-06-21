@@ -1,5 +1,6 @@
 ﻿using MechanicsWorkshopApi.Data;
 using MechanicsWorkshopApi.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +18,8 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetAllBookings()
+        [Authorize]
+        public async Task<ActionResult<Bookings>> GetAllBookings()
         {
             var bookings = await _context.Bookings
                 .Include(b => b.Car)    // These statements tell the framework to load related Car and Client entities when querying Bookings
@@ -30,7 +32,8 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult> GetBooking(int id)
+        [Authorize]
+        public async Task<ActionResult<Bookings>> GetBooking(int id)
         {
             var booking = await _context.Bookings
               .Include(b => b.Car)
@@ -47,7 +50,8 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> AddBooking(Bookings booking)
+        [Authorize]
+        public async Task<ActionResult<Bookings>> AddBooking(Bookings booking)
         {
             booking.Client = await _context.Clients.FindAsync(booking.ClientID);
             booking.Car = await _context.Cars.FindAsync(booking.CarID);
@@ -68,7 +72,8 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateBooking(int id, Bookings updatedBooking)
+        [Authorize]
+        public async Task<ActionResult<Bookings>> UpdateBooking(int id, Bookings updatedBooking)
         {
             var dbBooking = await _context.Bookings.FindAsync(id);
             {
@@ -89,6 +94,7 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<ActionResult> DeleteBooking(int id)
         {
             var dbBooking = await _context.Bookings.FindAsync(id);

@@ -1,5 +1,6 @@
 ﻿using MechanicsWorkshopApi.Data;
 using MechanicsWorkshopApi.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +18,8 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetAllCars()
+        [Authorize]
+        public async Task<ActionResult<Cars>> GetAllCars()
         {
             var cars = await _context.Cars.ToListAsync();
             {
@@ -26,7 +28,8 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult> GetCar(int id)
+        [Authorize]
+        public async Task<ActionResult<Cars>> GetCar(int id)
         {
             var car = await _context.Cars.FindAsync(id);
             {
@@ -40,7 +43,8 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> AddCar(Cars car)
+        [Authorize]
+        public async Task<ActionResult<Cars>> AddCar(Cars car)
         {
             if (car == null || car.Brand == null || car.Model == null || car.Year == null || car.Malfunction == null)
             {
@@ -53,7 +57,8 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateCar(int id, Cars updatedCar)
+        [Authorize]
+        public async Task<ActionResult<Cars>> UpdateCar(int id, Cars updatedCar)
         {
             var dbCar = await _context.Cars.FindAsync(id);
             {
@@ -74,13 +79,14 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<ActionResult> DeleteCar(int id)
         {
             // See if there is a booking that contains a client with this id
             var dbBooking = await _context.Bookings.FirstOrDefaultAsync(b => b.CarID == id); // LINQ lambda expression
             if (dbBooking != null)
             {
-                return BadRequest("Cannot delete car with a booking assigned! Please delete the booking first.");
+                return Conflict("Cannot delete car with a booking assigned! Please delete the booking first.");
             }
 
             var dbCar = await _context.Cars.FindAsync(id);
