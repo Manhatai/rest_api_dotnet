@@ -17,11 +17,11 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Bookings>>> GetAllBookings()
+        public async Task<ActionResult> GetAllBookings()
         {
             var bookings = await _context.Bookings
-                .Include(b => b.Car)    // These statements tell the framework to load related
-                .Include(b => b.Client) // Car and Client entities when querying Bookings
+                .Include(b => b.Car)    // These statements tell the framework to load related Car and Client entities when querying Bookings
+                .Include(b => b.Client)
                 .ToListAsync();
             {
                 return Ok(bookings);
@@ -30,13 +30,13 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Entities.Bookings>> GetBooking(int id)
+        public async Task<ActionResult> GetBooking(int id)
         {
             var booking = await _context.Bookings
               .Include(b => b.Car)
               .Include(b => b.Client)
-              .FirstOrDefaultAsync(b => b.ID == id); // FindAsync doesnt support Include,
-            {                                        // so I need to use this instead
+              .FirstOrDefaultAsync(b => b.ID == id); // FindAsync doesnt support Include, so I need to use this instead
+            {
                 if (booking is null)
                 {
                     return NotFound("Booking not found!");
@@ -47,7 +47,7 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<List<Entities.Bookings>>> AddBooking(Entities.Bookings booking)
+        public async Task<ActionResult> AddBooking(Bookings booking)
         {
             booking.Client = await _context.Clients.FindAsync(booking.ClientID);
             booking.Car = await _context.Cars.FindAsync(booking.CarID);
@@ -57,13 +57,18 @@ namespace MechanicsWorkshopApi.Controllers
                 return BadRequest("Client or car doesnt exist!");
             }
 
+            if (booking.Date == null || booking.Hour == null)
+            {
+                return BadRequest("Data cannot be empty!"); // 400
+            }
+
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
             return Created($"/workshop/clients/{booking.ID}", booking);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<List<Entities.Bookings>>> UpdateBooking(int id, Entities.Bookings updatedBooking)
+        public async Task<ActionResult> UpdateBooking(int id, Bookings updatedBooking)
         {
             var dbBooking = await _context.Bookings.FindAsync(id);
             {
@@ -84,7 +89,7 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<List<Entities.Bookings>>> DeleteBooking(int id)
+        public async Task<ActionResult> DeleteBooking(int id)
         {
             var dbBooking = await _context.Bookings.FindAsync(id);
             {

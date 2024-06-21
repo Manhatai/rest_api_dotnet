@@ -17,7 +17,7 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Cars>>> GetAllCars()
+        public async Task<ActionResult> GetAllCars()
         {
             var cars = await _context.Cars.ToListAsync();
             {
@@ -26,7 +26,7 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Entities.Cars>> GetCar(int id)
+        public async Task<ActionResult> GetCar(int id)
         {
             var car = await _context.Cars.FindAsync(id);
             {
@@ -40,15 +40,20 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<List<Entities.Cars>>> AddCar(Entities.Cars car)
+        public async Task<ActionResult> AddCar(Cars car)
         {
+            if (car == null || car.Brand == null || car.Model == null || car.Year == null || car.Malfunction == null)
+            {
+                return BadRequest("Data cannot be empty!"); // 400
+            }
+
             _context.Cars.Add(car);
             await _context.SaveChangesAsync();
             return Created($"/workshop/clients/{car.ID}", car);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<List<Entities.Cars>>> UpdateCar(int id, Entities.Cars updatedCar)
+        public async Task<ActionResult> UpdateCar(int id, Cars updatedCar)
         {
             var dbCar = await _context.Cars.FindAsync(id);
             {
@@ -69,20 +74,25 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<List<Entities.Cars>>> DeleteCar(int id)
+        public async Task<ActionResult> DeleteCar(int id)
         {
-            var dbCar = await _context.Cars.FindAsync(id);
+            // See if there is a booking that contains a client with this id
+            var dbBooking = await _context.Bookings.FirstOrDefaultAsync(b => b.CarID == id); // LINQ lambda expression
+            if (dbBooking != null)
             {
-                if (dbCar is null)
-                {
-                    return NotFound("Car not found!");
-                }
-
-                _context.Cars.Remove(dbCar);
-                await _context.SaveChangesAsync();
-
-                return NoContent();
+                return BadRequest("Cannot delete car with a booking assigned! Please delete the booking first.");
             }
+
+            var dbCar = await _context.Cars.FindAsync(id);
+            if (dbCar is null)
+            {
+                return NotFound("Car not found!");
+            }
+
+             _context.Cars.Remove(dbCar);
+             await _context.SaveChangesAsync();
+             return NoContent();
+            
         }
     }
 }

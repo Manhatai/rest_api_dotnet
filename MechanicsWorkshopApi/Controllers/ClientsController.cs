@@ -12,23 +12,23 @@ namespace MechanicsWorkshopApi.Controllers
 
         private readonly DataContext _context; // A private variable that holds the 'DataContext' instance.
 
-        public ClientsController(DataContext context) // Accepts the DataContext instance injected by dependancy 
-        {                                             // injection system. Used to interact with the DB.
-            _context = context;
+        public ClientsController(DataContext context) // Accepts the DataContext instance injected by dependancy injection system.
+        {
+            _context = context; // Used to interact with the DB.
         }
 
         [HttpGet] // Indicates the type of request, GET in this case.
-        // Async performs potentially long-running operations without blocking the calling thread. Allows for await.
-        public async Task<ActionResult<List<Entities.Clients>>> GetAllClients() // Retrives all clients from the DB
-        {                                                                       // in the form of a list.
-            var clients = await _context.Clients.ToListAsync(); // Used to get all cients from the Clients table 
-            {                                                   // by using EFC.
+      
+        public async Task<ActionResult> GetAllClients()
+        {
+            var clients = await _context.Clients.ToListAsync(); // Used to get all cients from the Clients table by using EFC.
+            {
                 return Ok(clients); // 200
             }
         }
 
         [HttpGet("{id}")] // Get request with an ID parameter
-        public async Task<ActionResult<Entities.Clients>> GetClient(int id)
+        public async Task<ActionResult> GetClient(int id)
         {
             var client = await _context.Clients.FindAsync(id); // Finds client by id
             {
@@ -42,15 +42,20 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<List<Entities.Clients>>> AddClient(Entities.Clients client)
+        public async Task<ActionResult> AddClient(Clients client)
         {
+            if (client == null || client.FirstName == null || client.LastName == null || client.Email == null || client.Phone == null)
+            {
+                return BadRequest("Data cannot be empty!"); // 400
+            }
+
             _context.Clients.Add(client);
             await _context.SaveChangesAsync();
             return Created($"/workshop/clients/{client.ID}", client); // 201
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<List<Entities.Clients>>> UpdateClient(int id, Entities.Clients updatedClient)
+        public async Task<ActionResult> UpdateClient(int id, Clients updatedClient)
         {
             var dbClient = await _context.Clients.FindAsync(id);
             {
@@ -71,20 +76,25 @@ namespace MechanicsWorkshopApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<List<Entities.Clients>>> DeleteClient(int id)
+        public async Task<ActionResult> DeleteClient(int id)
         {
-            var dbClient = await _context.Clients.FindAsync(id);
+            // See if there is a booking that contains a client with this id
+            var dbBooking = await _context.Bookings.FirstOrDefaultAsync(b => b.ClientID == id); // LINQ lambda expression
+            if (dbBooking != null)
             {
-                if (dbClient is null)
-                {
-                    return NotFound("Client not found!");
-                }
-
-                _context.Clients.Remove(dbClient);
-                await _context.SaveChangesAsync();
-
-                return NoContent(); // 204
+                return BadRequest("Cannot delete client with a booking assigned! Please delete the booking first.");
             }
+
+            var dbClient = await _context.Clients.FindAsync(id);     
+            if (dbClient is null)
+            {
+                return NotFound("Client not found!");
+            }
+
+            _context.Clients.Remove(dbClient);
+            await _context.SaveChangesAsync();
+
+            return NoContent(); // 204
         }
     }
 }

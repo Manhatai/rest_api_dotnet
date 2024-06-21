@@ -35,3 +35,14 @@ app.UseAuthorization(); // Adds authorization middleware
 app.MapControllers(); // ?? todo
 
 app.Run(); // Runs the app
+
+
+/*
+Todo:
+- Error when trying to delete a booking with a client, cause the booking history (?)
+- Other error handlers for controllers
+- Authentication
+- Encryption
+- Logging
+- Clean architecture
+ */
