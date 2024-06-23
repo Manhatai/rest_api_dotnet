@@ -2,7 +2,8 @@
 using MechanicsWorkshopApi.Entities; // Contains the DB tables.
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc; // Contains base classes for ASP.NET Core MVC controllers (??? - todo).
-using Microsoft.EntityFrameworkCore; // Contains the EFC classes for DB operations.
+using Microsoft.EntityFrameworkCore;
+using Serilog; // Contains the EFC classes for DB operations.
 
 namespace MechanicsWorkshopApi.Controllers
 {
@@ -24,6 +25,7 @@ namespace MechanicsWorkshopApi.Controllers
         {
             var clients = await _context.Clients.ToListAsync(); // Used to get all cients from the Clients table by using EFC.
             {
+                Log.Information("List of clients returned successfully [200]");
                 return Ok(clients); // 200
             }
         }
@@ -36,8 +38,10 @@ namespace MechanicsWorkshopApi.Controllers
             {
                 if (client is null)
                 {
+                    Log.Information($"Client with id {id} not found! [404]");
                     return NotFound("Client not found!");
-                } 
+                }
+                Log.Information($"Client with ID {id} returned successfully [200]");
                 return Ok(client);
             }
 
@@ -49,11 +53,13 @@ namespace MechanicsWorkshopApi.Controllers
         {
             if (client == null || client.FirstName == null || client.LastName == null || client.Email == null || client.Phone == null)
             {
+                Log.Information($"One or more input data empty while adding new client [400]");
                 return BadRequest("Data cannot be empty!"); // 400
             }
 
             _context.Clients.Add(client);
             await _context.SaveChangesAsync();
+            Log.Information($"New car with ID {client.ID} created successfully [201]");
             return Created($"/workshop/clients/{client.ID}", client); // 201
         }
 
@@ -65,6 +71,7 @@ namespace MechanicsWorkshopApi.Controllers
             {
                 if (dbClient is null)
                 {
+                    Log.Information($"Client with ID {id} not found [404]");
                     return NotFound("Client not found!"); // 404
                 }
 
@@ -75,7 +82,8 @@ namespace MechanicsWorkshopApi.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return Ok(updatedClient);
+                Log.Information($"Client with ID {dbClient.ID} updated successfully [200]");
+                return Ok(dbClient);
             }
         }
 
@@ -87,19 +95,22 @@ namespace MechanicsWorkshopApi.Controllers
             var dbBooking = await _context.Bookings.FirstOrDefaultAsync(b => b.ClientID == id); // LINQ lambda expression
             if (dbBooking != null)
             {
-                return Conflict("Cannot delete client with a booking assigned! Please delete the booking first.");
+                Log.Information($"Client with ID {id} has a booking assigned [404]");
+                return Conflict("Can not delete client with a booking assigned! Please delete the booking first.");
             }
 
             var dbClient = await _context.Clients.FindAsync(id);     
             if (dbClient is null)
             {
+                Log.Information($"Client with ID {id} not found [404]");
                 return NotFound("Client not found!");
             }
 
             _context.Clients.Remove(dbClient);
             await _context.SaveChangesAsync();
 
-            return NoContent(); // 204
+            Log.Information($"Client with ID {id} deleted successfully [203]");
+            return NoContent(); // 203
         }
     }
 }

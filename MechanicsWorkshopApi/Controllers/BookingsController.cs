@@ -1,8 +1,10 @@
 ﻿using MechanicsWorkshopApi.Data;
 using MechanicsWorkshopApi.Entities;
+using MechanicsWorkshopApi.Migrations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace MechanicsWorkshopApi.Controllers
 {
@@ -26,6 +28,7 @@ namespace MechanicsWorkshopApi.Controllers
                 .Include(b => b.Client)
                 .ToListAsync();
             {
+                Log.Information("List of bookings returned successfully [200]");
                 return Ok(bookings);
             }
             
@@ -42,8 +45,10 @@ namespace MechanicsWorkshopApi.Controllers
             {
                 if (booking is null)
                 {
+                    Log.Information($"Booking with id {id} not found! [404]");
                     return NotFound("Booking not found!");
                 }
+                Log.Information($"Booking with ID {id} returned successfully [200]");
                 return Ok(booking);
             }
 
@@ -58,16 +63,19 @@ namespace MechanicsWorkshopApi.Controllers
 
             if (booking.Client == null || booking.Car == null)
             {
+                Log.Information("Client or car doesn't exist. Please verify the provided IDs and ensure they are correct. [400]");
                 return BadRequest("Client or car doesnt exist!");
             }
 
             if (booking.Date == null || booking.Hour == null)
             {
+                Log.Information($"One or more input data empty while adding new booking [400]");
                 return BadRequest("Data cannot be empty!"); // 400
             }
 
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
+            Log.Information($"New booking with ID {booking.ID} created successfully [201]");
             return Created($"/workshop/clients/{booking.ID}", booking);
         }
 
@@ -79,6 +87,7 @@ namespace MechanicsWorkshopApi.Controllers
             {
                 if (dbBooking is null)
                 {
+                    Log.Information($"Booking with ID {id} not found [404]");
                     return NotFound("Booking not found!");
                 }
 
@@ -89,7 +98,8 @@ namespace MechanicsWorkshopApi.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return Ok(updatedBooking);
+                Log.Information($"Booking with ID {dbBooking.ID} updated successfully [200]");
+                return Ok(dbBooking);
             }
         }
 
@@ -101,13 +111,15 @@ namespace MechanicsWorkshopApi.Controllers
             {
                 if (dbBooking is null)
                 {
+                    Log.Information($"Booking with ID {id} not found [404]");
                     return NotFound("Booking not found!");
                 }
 
                 _context.Bookings.Remove(dbBooking);
                 await _context.SaveChangesAsync();
 
-                return NoContent();
+                Log.Information($"Booking with ID {id} deleted successfully [203]");
+                return NoContent(); // 203
             }
         }
     }

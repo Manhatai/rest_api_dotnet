@@ -3,7 +3,6 @@ using MechanicsWorkshopApi.Entities;
 using MechanicsWorkshopApi.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
@@ -15,8 +14,8 @@ namespace MechanicsWorkshopApi.Controllers
     [ApiController]
     public class AuthorizationController : ControllerBase
     {
-        private readonly DataContext _context;
-        private readonly IConfiguration _configuration;
+        private readonly DataContext _context; // used to access DB
+        private readonly IConfiguration _configuration; // used to access configuration settings (?)
 
         public AuthorizationController(DataContext context, IConfiguration configuration)
         {
@@ -72,7 +71,7 @@ namespace MechanicsWorkshopApi.Controllers
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection(
-                "REST_API_JWT_SERCRET_KEY").Value!));
+                "REST_API_JWT_SERCRET_KEY").Value!)); // from
 
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

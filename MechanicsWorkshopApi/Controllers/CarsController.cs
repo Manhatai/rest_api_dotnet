@@ -3,19 +3,23 @@ using MechanicsWorkshopApi.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace MechanicsWorkshopApi.Controllers
 {
     [Route("workshop/[controller]")]
     [ApiController]
-    public class CarsController : ControllerBase
+    public class CarsController : ControllerBase 
     {
         private readonly DataContext _context;
+        private readonly ILogger<CarsController> _logger;
 
-        public CarsController(DataContext context)
+        public CarsController(DataContext context) // Constructor
         {
             _context = context;
         }
+
+        
 
         [HttpGet]
         [Authorize]
@@ -23,6 +27,7 @@ namespace MechanicsWorkshopApi.Controllers
         {
             var cars = await _context.Cars.ToListAsync();
             {
+                Log.Information("List of cars returned successfully [200]");
                 return Ok(cars);
             }
         }
@@ -35,8 +40,11 @@ namespace MechanicsWorkshopApi.Controllers
             {
                 if (car is null)
                 {
+                    Log.Information($"Car with id {id} not found! [404]");
                     return NotFound("Car not found!");
                 }
+
+                Log.Information($"Car with ID {id} returned successfully [200]");
                 return Ok(car);
             }
 
@@ -48,11 +56,13 @@ namespace MechanicsWorkshopApi.Controllers
         {
             if (car == null || car.Brand == null || car.Model == null || car.Year == null || car.Malfunction == null)
             {
+                Log.Information($"One or more input data empty while adding new car [400]");
                 return BadRequest("Data cannot be empty!"); // 400
             }
 
             _context.Cars.Add(car);
             await _context.SaveChangesAsync();
+            Log.Information($"New car with ID {car.ID} created successfully [201]");
             return Created($"/workshop/clients/{car.ID}", car);
         }
 
@@ -64,6 +74,7 @@ namespace MechanicsWorkshopApi.Controllers
             {
                 if (dbCar is null)
                 {
+                    Log.Information($"Car with ID {id} not found [404]");
                     return NotFound("Car not found!");
                 }
 
@@ -74,7 +85,8 @@ namespace MechanicsWorkshopApi.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return Ok(updatedCar);
+                Log.Information($"Car with ID {dbCar.ID} updated successfully [200]");
+                return Ok(dbCar);
             }
         }
 
@@ -86,18 +98,21 @@ namespace MechanicsWorkshopApi.Controllers
             var dbBooking = await _context.Bookings.FirstOrDefaultAsync(b => b.CarID == id); // LINQ lambda expression
             if (dbBooking != null)
             {
-                return Conflict("Cannot delete car with a booking assigned! Please delete the booking first.");
+                Log.Information($"Car with ID {id} has a booking assigned, can not delete [404]");
+                return Conflict("Can not delete car with a booking assigned! Please delete the booking first.");
             }
 
             var dbCar = await _context.Cars.FindAsync(id);
             if (dbCar is null)
             {
+                Log.Information($"Car with ID {id} not found [404]");
                 return NotFound("Car not found!");
             }
 
              _context.Cars.Remove(dbCar);
              await _context.SaveChangesAsync();
-             return NoContent();
+            Log.Information($"Car with ID {id} deleted successfully [203]");
+            return NoContent();
             
         }
     }
