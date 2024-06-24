@@ -36,6 +36,8 @@ namespace MechanicsWorkshopApi.Controllers
         [Authorize]
         public async Task<ActionResult<Cars>> GetCar(int id)
         {
+            //throw new Exception("Test exception"); - for global catch testing
+
             var car = await _context.Cars.FindAsync(id);
             {
                 if (car is null)

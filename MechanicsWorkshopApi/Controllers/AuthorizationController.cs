@@ -6,6 +6,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
+using Serilog;
 
 namespace MechanicsWorkshopApi.Controllers
 {
@@ -38,6 +39,7 @@ namespace MechanicsWorkshopApi.Controllers
             _context.User.Add(user);
             await _context.SaveChangesAsync();
 
+            Log.Information("New user created successfully [201]");
             return Created($"/workshop/clients/{user.ID}", user); ;
         }
 
@@ -49,16 +51,19 @@ namespace MechanicsWorkshopApi.Controllers
 
             if (user == null)
             {
-                return NotFound("User not found!"); // for production only!
+                Log.Information("Desired user not found (invalid login) [404]");
+                return NotFound("Invalid login!"); // for development only!
             }
 
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
+                Log.Information("Invalid password [400]");
                 return BadRequest("Invalid password!");
             }
 
             string token = CreateToken(user);
 
+            Log.Information("Token generated successfully [200]");
             return Ok(token);
         }
 
@@ -71,7 +76,7 @@ namespace MechanicsWorkshopApi.Controllers
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection(
-                "REST_API_JWT_SERCRET_KEY").Value!)); // from
+                "REST_API_JWT_SK").Value!));
 
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

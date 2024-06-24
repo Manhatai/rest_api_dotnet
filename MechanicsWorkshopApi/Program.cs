@@ -2,7 +2,7 @@ using MechanicsWorkshopApi.Data; // Imports data context from Data
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Serilog; // For DB operations
+using Serilog; // For log handling
 
 
 var builder = WebApplication.CreateBuilder(args); // Used to configure and build the app, like below
@@ -14,7 +14,7 @@ var port = builder.Configuration["REST_API_DB_PORT"];
 var database = builder.Configuration["REST_API_DB_NAME"];
 var username = builder.Configuration["REST_API_DB_LOGIN"];
 var password = builder.Configuration["REST_API_DB_PASSWORD"];
-var secret_key = builder.Configuration["REST_API_JWT_SERCRET_KEY"];
+var secret_key = builder.Configuration["REST_API_JWT_SK"];
 var connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password}";
 
 
@@ -25,11 +25,11 @@ builder.Services.AddSwaggerGen(); // Registers swagger generation which is used 
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseNpgsql(connectionString); // Registers the connectionString variable as the DB connection which uses
-});                                      // previously retrieved config values. Dependency injection container - todo.
+});                                      // previously retrieved env values. Dependency injection container - todo.
 
 
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // Bit confusing code - todo
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -45,7 +45,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 Log.Logger = new LoggerConfiguration() // Serilog docs for more
     .MinimumLevel.Information()
     .WriteTo.Console()
-    .WriteTo.File("Logs/logs-.txt", rollingInterval: RollingInterval.Day) // new logs each day :D
+    .WriteTo.File("Logs/logs-.txt", rollingInterval: RollingInterval.Day) // New logs each day
     .CreateLogger();
 
 var app = builder.Build(); // 'app = Flask(__name__)' essentially.
@@ -56,6 +56,22 @@ if (app.Environment.IsDevelopment()) // Enables the API docummentation testing f
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.Use(async (context, next) => // Global error catch
+{
+    try
+    {
+        await next(context);
+    }
+    catch (Exception e)
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync("Unhandled error caught. Please provide logs and usecase to the development team.");
+        Log.Information($"Unhandled error caught. Details => <{e.Message}> [500]");
+    }
+});
+
 app.UseHttpsRedirection(); // Middleware for redirecting from HTTP to HTTPS
 app.UseAuthentication();
 app.UseAuthorization();
@@ -65,6 +81,5 @@ app.Run(); // Runs the app
 
 /*
 Todo:
-- Logging
 - Clean architecture
  */
