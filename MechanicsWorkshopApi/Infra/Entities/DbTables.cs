@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MechanicsWorkshopApi.Entities
+namespace MechanicsWorkshopApi.Infra.Entities
 {
     public class Clients
     {

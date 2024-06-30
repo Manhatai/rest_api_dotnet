@@ -1,8 +1,8 @@
 ﻿// So called Entity Framework Core which is a ORM (allows interacting with DB using .NET objects)
-using MechanicsWorkshopApi.Entities; // Contains definitions for Clients, Cars and Bookings
+using MechanicsWorkshopApi.Infra.Entities;
 using Microsoft.EntityFrameworkCore; // EFC import
 
-namespace MechanicsWorkshopApi.Data // Namespaces = a way to organize and group related classes
+namespace MechanicsWorkshopApi.Infra.Data // Namespaces = a way to organize and group related classes
 {
     public class DataContext : DbContext // DataContext inherits from DbContext which is the primary way to interact with DB,
     {                                    // so it becomes a context class allowing for data querying

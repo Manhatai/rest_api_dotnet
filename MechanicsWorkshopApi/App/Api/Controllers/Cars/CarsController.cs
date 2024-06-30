@@ -1,15 +1,15 @@
-﻿using MechanicsWorkshopApi.Data;
-using MechanicsWorkshopApi.Entities;
+﻿using MechanicsWorkshopApi.Infra.Data;
+using MechanicsWorkshopApi.Infra.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace MechanicsWorkshopApi.Controllers
+namespace MechanicsWorkshopApi.app.api.Controllers
 {
     [Route("workshop/[controller]")]
     [ApiController]
-    public class CarsController : ControllerBase 
+    public class CarsController : ControllerBase
     {
         private readonly DataContext _context;
         private readonly ILogger<CarsController> _logger;
@@ -19,7 +19,7 @@ namespace MechanicsWorkshopApi.Controllers
             _context = context;
         }
 
-        
+
 
         [HttpGet]
         [Authorize]
@@ -111,11 +111,11 @@ namespace MechanicsWorkshopApi.Controllers
                 return NotFound("Car not found!");
             }
 
-             _context.Cars.Remove(dbCar);
-             await _context.SaveChangesAsync();
+            _context.Cars.Remove(dbCar);
+            await _context.SaveChangesAsync();
             Log.Information($"Car with ID {id} deleted successfully [203]");
             return NoContent();
-            
+
         }
     }
 }

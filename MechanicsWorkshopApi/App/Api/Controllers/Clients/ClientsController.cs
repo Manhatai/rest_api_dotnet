@@ -1,11 +1,11 @@
-﻿using MechanicsWorkshopApi.Data; // Contains the DataContext class.
-using MechanicsWorkshopApi.Entities; // Contains the DB tables.
+﻿using MechanicsWorkshopApi.Infra.Data;
+using MechanicsWorkshopApi.Infra.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc; // Contains base classes for ASP.NET Core MVC controllers (??? - todo).
 using Microsoft.EntityFrameworkCore;
 using Serilog; // Contains the EFC classes for DB operations.
 
-namespace MechanicsWorkshopApi.Controllers
+namespace MechanicsWorkshopApi.app.api.Controllers
 {
     [Route("workshop/[controller]")] // Sets the base route for the controller. 'Clients' in this case.
     [ApiController] // Marks the class as an API controller.
@@ -99,7 +99,7 @@ namespace MechanicsWorkshopApi.Controllers
                 return Conflict("Can not delete client with a booking assigned! Please delete the booking first.");
             }
 
-            var dbClient = await _context.Clients.FindAsync(id);     
+            var dbClient = await _context.Clients.FindAsync(id);
             if (dbClient is null)
             {
                 Log.Information($"Client with ID {id} not found [404]");

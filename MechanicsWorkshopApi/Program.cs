@@ -1,8 +1,9 @@
-using MechanicsWorkshopApi.Data; // Imports data context from Data
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using MechanicsWorkshopApi.Helpers;
+using MechanicsWorkshopApi.Infra.Data;
+using MechanicsWorkshopApi.Security;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Serilog; // For log handling
+using Serilog;
+
 
 
 var builder = WebApplication.CreateBuilder(args); // Used to configure and build the app, like below
@@ -18,7 +19,6 @@ var secret_key = builder.Configuration["REST_API_JWT_SK"];
 var connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password}";
 
 
-
 builder.Services.AddControllers(); // Adds support for API endpoints 
 builder.Services.AddEndpointsApiExplorer(); // 'Endpoints discovery' for tools like swagger
 builder.Services.AddSwaggerGen(); // Registers swagger generation which is used to create Swagger docummentation
@@ -29,17 +29,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // Bit confusing code - todo
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secret_key)),
-            ValidateIssuer = false,
-            ValidateAudience = false
-        };
-    });
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 
 Log.Logger = new LoggerConfiguration() // Serilog docs for more
@@ -57,25 +47,13 @@ if (app.Environment.IsDevelopment()) // Enables the API docummentation testing f
     app.UseSwaggerUI();
 }
 
-app.Use(async (context, next) => // Global error catch
-{
-    try
-    {
-        await next(context);
-    }
-    catch (Exception e)
-    {
-        context.Response.StatusCode = 500;
-        context.Response.ContentType = "application/json";
-        await context.Response.WriteAsJsonAsync("Unhandled error caught. Please provide logs and usecase to the development team.");
-        Log.Information($"Unhandled error caught. Details => <{e.Message}> [500]");
-    }
-});
+
 
 app.UseHttpsRedirection(); // Middleware for redirecting from HTTP to HTTPS
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.Use(async (context, next) => await ErrorHandlingHelper.HandleGlobalErrors(context, () => next(context))); // Global error handler
 app.Run(); // Runs the app
 
 

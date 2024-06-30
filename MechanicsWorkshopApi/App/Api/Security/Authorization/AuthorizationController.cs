@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MechanicsWorkshopApi.Entities;
-using MechanicsWorkshopApi.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Serilog;
+using MechanicsWorkshopApi.Infra.Entities;
+using MechanicsWorkshopApi.Infra.Data;
 
-namespace MechanicsWorkshopApi.Controllers
+namespace MechanicsWorkshopApi.app.api.Security.Authorization
 {
 
     [Route("workshop/[controller]")]
@@ -24,7 +24,7 @@ namespace MechanicsWorkshopApi.Controllers
             _configuration = configuration;
         }
 
-        
+
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register(UserRequest request)
         {

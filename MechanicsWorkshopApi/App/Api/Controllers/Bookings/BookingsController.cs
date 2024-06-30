@@ -1,12 +1,12 @@
-﻿using MechanicsWorkshopApi.Data;
-using MechanicsWorkshopApi.Entities;
+﻿using MechanicsWorkshopApi.Infra.Data;
+using MechanicsWorkshopApi.Infra.Entities;
 using MechanicsWorkshopApi.Migrations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace MechanicsWorkshopApi.Controllers
+namespace MechanicsWorkshopApi.app.api.Controllers
 {
     [Route("workshop/[controller]")]
     [ApiController]
@@ -31,7 +31,7 @@ namespace MechanicsWorkshopApi.Controllers
                 Log.Information("List of bookings returned successfully [200]");
                 return Ok(bookings);
             }
-            
+
         }
 
         [HttpGet("{id}")]
