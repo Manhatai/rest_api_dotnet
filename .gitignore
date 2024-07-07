@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /MechanicsWorkshopApi/appsettings.Development.json
 /MechanicsWorkshopApi/appsettings.Development.json
+/MechanicsWorkshopApi/appSettings.Production.json
